@@ -5,3 +5,4 @@ authors = ["i2tsuki <mac-daisuki@live.jp>"]
 edition = "2018"
 
 [dependencies]
+mailparse = "0.10.1"
