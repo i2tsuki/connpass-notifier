@@ -1,0 +1,7 @@
+[package]
+name = "connpass-notifier"
+version = "0.1.0"
+authors = ["i2tsuki <mac-daisuki@live.jp>"]
+edition = "2018"
+
+[dependencies]
