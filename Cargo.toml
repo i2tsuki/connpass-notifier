@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 mailparse = "0.10.1"
+imap = "1.0.2"
