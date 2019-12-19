@@ -3,6 +3,8 @@ extern crate native_tls;
 
 use std::env;
 
+use mailparse::*;
+
 fn main() {
     let domain = env::var("IMAP_DOMAIN").unwrap();
     let port = env::var("IMAP_PORT").unwrap().parse::<u16>().unwrap();
@@ -27,6 +29,11 @@ fn main() {
 
     let body = message.body().expect("message did not have a body!");
     let body = std::str::from_utf8(body).expect("message was not valid utf-8");
+
+    let parsed = parse_mail(body.as_bytes()).unwrap();
+
+    let subject = parsed.headers.get_first_value("Subject").unwrap();
+    println!("{:?}", subject);
 
     imap_session.logout().unwrap();
 }
