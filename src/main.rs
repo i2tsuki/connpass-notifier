@@ -13,6 +13,8 @@ fn main() {
     let user = env::var("IMAP_USER").unwrap();
     let password = env::var("IMAP_PASSWORD").unwrap();
 
+    let chunk = 10;
+
     let tls = native_tls::TlsConnector::builder().build().unwrap();
 
     let client = imap::connect((domain.as_str(), port), &domain, &tls).unwrap();
@@ -22,8 +24,11 @@ fn main() {
     imap_session.select("INBOX").unwrap();
 
     let sequences = imap_session.search("FROM no-reply@connpass.com").unwrap();
-    for seq in sequences {
-        get_message_subject(&mut imap_session, seq);
+    for (i, seq) in sequences.iter().enumerate() {
+        get_message_subject(&mut imap_session, *seq);
+        if i > chunk {
+            break;
+        }
     }
 
     imap_session.logout().unwrap();
