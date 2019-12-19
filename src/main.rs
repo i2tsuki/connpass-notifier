@@ -16,4 +16,5 @@ fn main() {
     let mut imap_session = client.login(user, password).unwrap();
 
     println!("Hello, world!");
+    imap_session.logout().unwrap();
 }
