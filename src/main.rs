@@ -15,6 +15,18 @@ fn main() {
 
     let mut imap_session = client.login(user, password).unwrap();
 
-    println!("Hello, world!");
+    imap_session.select("INBOX").unwrap();
+
+    let messages = imap_session.fetch("1", "RFC822").unwrap();
+
+    let message = if let Some(m) = messages.iter().next() {
+        m
+    } else {
+        return
+    };
+
+    let body = message.body().expect("message did not have a body!");
+    let body = std::str::from_utf8(body).expect("message was not valid utf-8");
+
     imap_session.logout().unwrap();
 }
