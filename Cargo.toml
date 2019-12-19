@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 mailparse = "0.10.1"
 imap = "1.0.2"
+native-tls = "0.2.3"
