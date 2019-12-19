@@ -20,6 +20,7 @@ fn main() {
     imap_session.select("INBOX").unwrap();
 
     let messages = imap_session.fetch("1", "RFC822").unwrap();
+    imap_session.store("1", "-FLAGS (\\Seen)").unwrap();
 
     let message = if let Some(m) = messages.iter().next() {
         m
