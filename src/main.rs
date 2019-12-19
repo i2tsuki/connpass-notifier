@@ -2,7 +2,9 @@ extern crate imap;
 extern crate native_tls;
 
 use std::env;
+use std::io::{Read, Write};
 
+use imap::types::Seq;
 use mailparse::*;
 
 fn main() {
@@ -19,8 +21,15 @@ fn main() {
 
     imap_session.select("INBOX").unwrap();
 
-    let messages = imap_session.fetch("1", "RFC822").unwrap();
-    imap_session.store("1", "-FLAGS (\\Seen)").unwrap();
+    get_message_subject(&mut imap_session, 1);
+
+    imap_session.logout().unwrap();
+}
+
+fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq: Seq) {
+    let message_id = &seq.to_string();
+    let messages = imap_session.fetch(message_id, "RFC822").unwrap();
+    imap_session.store(message_id, "-FLAGS (\\Seen)").unwrap();
 
     let message = if let Some(m) = messages.iter().next() {
         m
@@ -36,5 +45,5 @@ fn main() {
     let subject = parsed.headers.get_first_value("Subject").unwrap();
     println!("{:?}", subject);
 
-    imap_session.logout().unwrap();
+    return;
 }
