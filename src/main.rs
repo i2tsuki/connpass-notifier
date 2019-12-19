@@ -21,7 +21,10 @@ fn main() {
 
     imap_session.select("INBOX").unwrap();
 
-    get_message_subject(&mut imap_session, 1);
+    let sequences = imap_session.search("FROM no-reply@connpass.com").unwrap();
+    for seq in sequences {
+        get_message_subject(&mut imap_session, seq);
+    }
 
     imap_session.logout().unwrap();
 }
@@ -34,7 +37,7 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let message = if let Some(m) = messages.iter().next() {
         m
     } else {
-        return
+        return;
     };
 
     let body = message.body().expect("message did not have a body!");
