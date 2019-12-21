@@ -1,11 +1,13 @@
 extern crate imap;
 extern crate native_tls;
+extern crate regex;
 
 use std::env;
 use std::io::{Read, Write};
 
 use imap::types::Seq;
 use mailparse::*;
+use regex::Regex;
 
 fn main() {
     let domain = env::var("IMAP_DOMAIN").unwrap();
@@ -50,8 +52,12 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
 
     let parsed = parse_mail(body.as_bytes()).unwrap();
 
-    let subject = parsed.headers.get_first_value("Subject").unwrap();
-    println!("{:?}", subject);
+    let subject = parsed.headers.get_first_value("Subject").unwrap().unwrap();
+
+    let re = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
+    if re.is_match(&subject) {
+        println!("{}", subject);
+    }
 
     return;
 }
