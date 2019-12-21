@@ -57,6 +57,9 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let re = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
     if re.is_match(&subject) {
         println!("{}", subject);
+        imap_session
+            .store(message_id, "+FLAGS (\\Deleted)")
+            .unwrap();
     }
 
     return;
