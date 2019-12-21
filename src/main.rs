@@ -52,11 +52,12 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
 
     let parsed = parse_mail(body.as_bytes()).unwrap();
 
+    let date = parsed.headers.get_first_value("Date").unwrap().unwrap();
     let subject = parsed.headers.get_first_value("Subject").unwrap().unwrap();
 
     let re = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
     if re.is_match(&subject) {
-        println!("{}", subject);
+        println!("{:<32}: {}", date, subject);
         imap_session
             .store(message_id, "+FLAGS (\\Deleted)")
             .unwrap();
