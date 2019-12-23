@@ -1,13 +1,16 @@
 extern crate imap;
 extern crate native_tls;
 extern crate regex;
+extern crate time;
 
 use std::env;
 use std::io::{Read, Write};
 
+use chrono::prelude::*;
 use imap::types::Seq;
 use mailparse::*;
 use regex::Regex;
+use time::Duration;
 
 fn main() {
     let domain = env::var("IMAP_DOMAIN").unwrap();
@@ -25,7 +28,14 @@ fn main() {
 
     imap_session.select("INBOX").unwrap();
 
-    let sequences = imap_session.search("FROM no-reply@connpass.com").unwrap();
+    let since: DateTime<Local> = Local::now() - Duration::hours(24 * 30);
+
+    let sequences = imap_session
+        .search(format!(
+            "FROM no-reply@connpass.com SINCE {}",
+            since.format("%d-%b-%Y")
+        ))
+        .unwrap();
     for (i, seq) in sequences.iter().enumerate() {
         get_message_subject(&mut imap_session, *seq);
         if i > chunk {
@@ -56,6 +66,14 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let subject = parsed.headers.get_first_value("Subject").unwrap().unwrap();
 
     let re = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
+    if re.is_match(&subject) {
+        println!("{:<32}: {}", date, subject);
+        imap_session
+            .store(message_id, "+FLAGS (\\Deleted)")
+            .unwrap();
+    }
+
+    let re = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
     if re.is_match(&subject) {
         println!("{:<32}: {}", date, subject);
         imap_session
