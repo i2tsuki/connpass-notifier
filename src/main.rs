@@ -17,7 +17,7 @@ fn main() {
     let port = env::var("IMAP_PORT")
         .expect("IMAP_PORT is not given")
         .parse::<u16>()
-        .unwrap();
+        .expect("IMAP_PORT is not positive number");
     let user = env::var("IMAP_USER").expect("IMAP_USER is not given");
     let password = env::var("IMAP_PASSWORD").expect("IMAP_PASSWORD is not given");
 
