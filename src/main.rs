@@ -13,10 +13,13 @@ use regex::Regex;
 use time::Duration;
 
 fn main() {
-    let domain = env::var("IMAP_DOMAIN").unwrap();
-    let port = env::var("IMAP_PORT").unwrap().parse::<u16>().unwrap();
-    let user = env::var("IMAP_USER").unwrap();
-    let password = env::var("IMAP_PASSWORD").unwrap();
+    let domain = env::var("IMAP_DOMAIN").expect("IMAP_DOMAIN is not given");
+    let port = env::var("IMAP_PORT")
+        .expect("IMAP_PORT is not given")
+        .parse::<u16>()
+        .unwrap();
+    let user = env::var("IMAP_USER").expect("IMAP_USER is not given");
+    let password = env::var("IMAP_PASSWORD").expect("IMAP_PASSWORD is not given");
 
     let chunk = 10;
 
@@ -36,6 +39,7 @@ fn main() {
             since.format("%d-%b-%Y")
         ))
         .unwrap();
+
     for (i, seq) in sequences.iter().enumerate() {
         get_message_subject(&mut imap_session, *seq);
         if i > chunk {
