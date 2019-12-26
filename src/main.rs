@@ -89,5 +89,13 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
             .unwrap();
     }
 
+    let re: Regex = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
+    if re.is_match(&subject) {
+        println!("{:<32}: {}", date, subject);
+        imap_session
+            .store(message_id, "+FLAGS (\\Deleted)")
+            .unwrap();
+    }
+
     return;
 }
