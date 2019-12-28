@@ -5,10 +5,13 @@ extern crate time;
 
 use std::collections::HashSet;
 use std::env;
+use std::fs;
+use std::io::BufWriter;
 use std::io::{Read, Write};
 
 use chrono::prelude::*;
 use imap::types::*;
+use mailparse::body::Body;
 use mailparse::*;
 use native_tls::{TlsConnector, TlsStream};
 use regex::Regex;
@@ -97,5 +100,18 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
             .unwrap();
     }
 
+    let re: Regex = Regex::new(r"^.*に資料が追加されました。$").unwrap();
+    if re.is_match(&subject) {
+        match parsed.subparts[1].get_body_encoded().unwrap() {
+            Body::SevenBit(body) | Body::EightBit(body) => {
+                let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+                let bytes = body.get_raw();
+                f.write(&bytes).unwrap();
+            }
+            _ => {
+                return;
+            }
+        }
+    }
     return;
 }
