@@ -102,6 +102,8 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
 
     let re: Regex = Regex::new(r"^.*に資料が追加されました。$").unwrap();
     if re.is_match(&subject) {
+        println!("{:<32}: {}", date, subject);
+
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
                 let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
