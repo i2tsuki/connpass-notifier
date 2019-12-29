@@ -8,8 +8,10 @@ use std::env;
 use std::fs;
 use std::io::BufWriter;
 use std::io::{Read, Write};
+use std::path::PathBuf;
 
 use chrono::prelude::*;
+use headless_chrome::browser::Browser;
 use imap::types::*;
 use mailparse::body::Body;
 use mailparse::*;
@@ -109,6 +111,27 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
                 let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
                 let bytes = body.get_raw();
                 f.write(&bytes).unwrap();
+                f.flush().unwrap();
+
+                let browser = Browser::default().unwrap();
+                let tab = browser.wait_for_initial_tab().unwrap();
+
+                let mut path = PathBuf::new();
+                let cwd = std::env::current_dir().unwrap();
+                path.push(cwd);
+                path.push("message.html");
+
+                tab.navigate_to(format!("file://{}", path.to_str().unwrap()).as_str())
+                    .unwrap()
+                    .wait_until_navigated()
+                    .unwrap();
+
+                let bytes = tab.print_to_pdf(None).unwrap();
+
+                let mut f =
+                    BufWriter::new(fs::File::create(format!("message{}.pdf", seq)).unwrap());
+                f.write(&bytes).unwrap();
+                f.flush().unwrap();
             }
             _ => {
                 return;
