@@ -137,6 +137,10 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
                 return;
             }
         }
+        imap_session
+            .store(message_id, "+FLAGS (\\Deleted)")
+            .unwrap();
     }
+
     return;
 }
