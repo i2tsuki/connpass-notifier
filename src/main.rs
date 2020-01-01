@@ -28,6 +28,7 @@ fn main() {
         .expect("IMAP_PORT is not positive number");
     let user: String = env::var("IMAP_USER").expect("IMAP_USER is not given");
     let password: String = env::var("IMAP_PASSWORD").expect("IMAP_PASSWORD is not given");
+    let mail: String = env::var("IMAP_MAIL").expect("IMAP_MAIL is not given");
 
     let chunk: usize = 10;
 
@@ -50,7 +51,7 @@ fn main() {
         .unwrap();
 
     for (i, seq) in sequences.iter().enumerate() {
-        get_message_subject(&mut imap_session, *seq);
+        get_message_subject(&mut imap_session, *seq, mail.as_str());
         if i > chunk {
             break;
         }
@@ -59,7 +60,7 @@ fn main() {
     imap_session.logout().unwrap();
 }
 
-fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq: Seq) {
+fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq: Seq, mail: &str) {
     let message_id: &str = &seq.to_string();
     let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(message_id, "RFC822").unwrap();
     imap_session.store(message_id, "-FLAGS (\\Seen)").unwrap();
@@ -109,8 +110,25 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
                 let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-                let bytes = body.get_raw();
-                f.write(&bytes).unwrap();
+                let s = body.get_as_string().unwrap();
+                let s = s.replace("\r", "")
+                .replace(r#"
+      <!-- フッタ文言部分 -->
+      <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
+        <tr>
+          <td>
+            <div style="font-size:10px; color:#333; line-height:16px;">
+"#, "")
+                .replace(format!(r#"
+              {}宛てにメッセージが送信されました。<br>
+              今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
+              ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
+            </div>
+            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © 2019 BeProud, Inc. All Rights Reserved.</div></td>
+        </tr>
+      </table>
+"#, mail).as_str(), "");
+                f.write(&(s.as_bytes())).unwrap();
                 f.flush().unwrap();
 
                 let browser = Browser::default().unwrap();
