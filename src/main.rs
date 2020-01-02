@@ -79,34 +79,23 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let date: String = parsed.headers.get_first_value("Date").unwrap().unwrap();
     let subject: String = parsed.headers.get_first_value("Subject").unwrap().unwrap();
 
-    let re: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
-    if re.is_match(&subject) {
+    let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
+    let re_public_event1: Regex = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
+    let re_public_event2 = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
+    let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
+
+    if re_register_event.is_match(&subject)
+        | re_public_event1.is_match(&subject)
+        | re_public_event2.is_match(&subject)
+        | re_document_add.is_match(&subject)
+    {
         println!("{:<32}: {}", date, subject);
         imap_session
             .store(message_id, "+FLAGS (\\Deleted)")
             .unwrap();
     }
 
-    let re: Regex = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
-    if re.is_match(&subject) {
-        println!("{:<32}: {}", date, subject);
-        imap_session
-            .store(message_id, "+FLAGS (\\Deleted)")
-            .unwrap();
-    }
-
-    let re: Regex = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
-    if re.is_match(&subject) {
-        println!("{:<32}: {}", date, subject);
-        imap_session
-            .store(message_id, "+FLAGS (\\Deleted)")
-            .unwrap();
-    }
-
-    let re: Regex = Regex::new(r"^.*に資料が追加されました。$").unwrap();
-    if re.is_match(&subject) {
-        println!("{:<32}: {}", date, subject);
-
+    if re_document_add.is_match(&subject) {
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
                 let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
@@ -155,9 +144,6 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
                 return;
             }
         }
-        imap_session
-            .store(message_id, "+FLAGS (\\Deleted)")
-            .unwrap();
     }
 
     return;
