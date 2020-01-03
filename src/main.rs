@@ -82,11 +82,13 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
     let re_public_event1: Regex = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
     let re_public_event2 = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
+    let re_open_event = Regex::new(r"^.*の募集が開始されました$").unwrap();
     let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
 
     if re_register_event.is_match(&subject)
         | re_public_event1.is_match(&subject)
         | re_public_event2.is_match(&subject)
+        | re_open_event.is_match(&subject)
         | re_document_add.is_match(&subject)
     {
         println!("{:<32}: {}", date, subject);
