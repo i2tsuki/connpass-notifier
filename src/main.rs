@@ -87,15 +87,15 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         | re_public_event1.is_match(&subject)
         | re_public_event2.is_match(&subject)
         | re_open_event.is_match(&subject)
-        | re_document_add.is_match(&subject)
     {
         println!("{:<32}: {}", date, subject);
         imap_session
             .store(message_id, "+FLAGS (\\Deleted)")
             .unwrap();
     }
+    } else if re_document_add.is_match(&subject) {
+        println!("{:<32}: {}", date, subject);
 
-    if re_document_add.is_match(&subject) {
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
                 let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
