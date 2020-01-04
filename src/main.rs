@@ -42,12 +42,10 @@ fn main() {
     imap_session.select("INBOX").unwrap();
 
     let since: DateTime<Local> = Local::now() - Duration::hours(24 * 30);
+    let from: &str = "no-reply@connpass.com";
 
     let sequences: HashSet<Seq> = imap_session
-        .search(format!(
-            "FROM no-reply@connpass.com SINCE {}",
-            since.format("%d-%b-%Y")
-        ))
+        .search(format!("FROM {} SINCE {}", from, since.format("%d-%b-%Y")))
         .unwrap();
 
     for (i, seq) in sequences.iter().enumerate() {
