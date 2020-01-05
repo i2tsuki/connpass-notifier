@@ -137,6 +137,43 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         f.flush().unwrap();
 
         print_mail_pdf("message.html", message_id);
+    } else {
+        println!("{}: {:<32}: {}", message_id, date, subject);
+
+        if parsed.subparts.len() > 0 {
+            match parsed.subparts[parsed.subparts.len() - 1]
+                .get_body_encoded()
+                .unwrap()
+            {
+                Body::SevenBit(body) | Body::EightBit(body) => {
+                    let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+                    let s = body.get_as_string().unwrap();
+                    f.write(&(s.as_bytes())).unwrap();
+                    f.flush().unwrap();
+
+                    print_mail_pdf("message.html", message_id);
+                }
+                Body::Base64(body) => {
+                    let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+                    let s = body.get_decoded_as_string().unwrap();
+                    f.write(&(s.as_bytes())).unwrap();
+                    f.flush().unwrap();
+
+                    print_mail_pdf("message.html", message_id);
+                }
+                _ => {
+                    return;
+                }
+            }
+        } else {
+            let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+            let s = parsed.get_body().unwrap();
+
+            f.write(&(s.as_bytes())).unwrap();
+            f.flush().unwrap();
+
+            print_mail_pdf("message.html", message_id);
+        }
     }
 
     imap_session
