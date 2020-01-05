@@ -89,9 +89,6 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         | re_open_event.is_match(&subject)
     {
         println!("{:<32}: {}", date, subject);
-        imap_session
-            .store(message_id, "+FLAGS (\\Deleted)")
-            .unwrap();
     } else if re_document_add.is_match(&subject) {
         println!("{:<32}: {}", date, subject);
 
@@ -141,6 +138,10 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
 
         print_mail_pdf("message.html", message_id);
     }
+
+    imap_session
+        .store(message_id, "+FLAGS (\\Seen \\Deleted)")
+        .unwrap();
 
     return;
 }
