@@ -98,15 +98,26 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
                 s = body.get_as_string().unwrap();
-                s = s.replace("\r", "")
-                .replace(r#"
+            }
+            Body::Base64(body) => {
+                s = body.get_decoded_as_string().unwrap();
+            }
+
+            _ => {
+                println!("return");
+                return;
+            }
+        }
+
+        s = s.replace("\r", "")
+            .replace(r#"
       <!-- フッタ文言部分 -->
       <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
         <tr>
           <td>
             <div style="font-size:10px; color:#333; line-height:16px;">
 "#, "")
-                .replace(format!(r#"
+            .replace(format!(r#"
               {}宛てにメッセージが送信されました。<br>
               今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
               ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
@@ -115,23 +126,6 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         </tr>
       </table>
 "#, mail).as_str(), "");
-            }
-            Body::Base64(body) => {
-                s = body.get_decoded_as_string().unwrap();
-                s = s.replace("\r", "");
-                s = s.replace(format!(r#"              </table>
-              {}宛てにメッセージが送信されました。<br>
-              今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
-              ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
-            </div>
-            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © 2018 BeProud, Inc. All Rights Reserved."#, mail).as_str(), "");
-            }
-
-            _ => {
-                println!("return");
-                return;
-            }
-        }
 
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
