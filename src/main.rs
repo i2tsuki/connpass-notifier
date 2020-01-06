@@ -75,6 +75,7 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let parsed: mailparse::ParsedMail = parse_mail(body.as_bytes()).unwrap();
 
     let date: String = parsed.headers.get_first_value("Date").unwrap().unwrap();
+    let unix: i64 = mailparse::dateparse(date.as_str()).unwrap();
     let subject: String = parsed.headers.get_first_value("Subject").unwrap().unwrap();
 
     let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
@@ -122,10 +123,10 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
               今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
               ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
             </div>
-            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © 2019 BeProud, Inc. All Rights Reserved.</div></td>
+            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {} BeProud, Inc. All Rights Reserved.</div></td>
         </tr>
       </table>
-"#, mail).as_str(), "");
+"#, mail, Local.timestamp(unix, 0).format("%Y")).as_str(), "");
 
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
