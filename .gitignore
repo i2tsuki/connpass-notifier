@@ -12,3 +12,6 @@
 auto-save-list
 tramp
 .\#*
+
+*.pdf
+.envrc
