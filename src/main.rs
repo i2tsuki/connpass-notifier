@@ -83,6 +83,7 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
     let re_public_event2 = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
     let re_open_event = Regex::new(r"^.*の募集が開始されました$").unwrap();
     let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
+    let re_event_message = Regex::new(r"^connpass イベント管理者からのメッセージ.*$").unwrap();
 
     if re_register_event.is_match(&subject)
         | re_public_event1.is_match(&subject)
@@ -103,7 +104,6 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
             Body::Base64(body) => {
                 s = body.get_decoded_as_string().unwrap();
             }
-
             _ => {
                 println!("return");
                 return;
@@ -127,6 +127,29 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
         </tr>
       </table>
 "#, mail, Local.timestamp(unix, 0).format("%Y")).as_str(), "");
+
+        f.write(&(s.as_bytes())).unwrap();
+        f.flush().unwrap();
+
+        print_mail_pdf("message.html", message_id);
+    } else if re_event_message.is_match(&subject) {
+        println!("{:<32}: {}", date, subject);
+
+        let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+        let s: String;
+
+        match parsed.subparts[1].get_body_encoded().unwrap() {
+            Body::SevenBit(body) | Body::EightBit(body) => {
+                s = body.get_as_string().unwrap();
+            }
+            Body::Base64(body) => {
+                s = body.get_decoded_as_string().unwrap();
+            }
+            _ => {
+                println!("return");
+                return;
+            }
+        }
 
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
