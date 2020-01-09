@@ -171,7 +171,7 @@ fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq
 
                     print_mail_pdf("message.html", message_id);
                 }
-                Body::Base64(body) => {
+                Body::Base64(body) | Body::QuotedPrintable(body) => {
                     let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
                     let s = body.get_decoded_as_string().unwrap();
                     f.write(&(s.as_bytes())).unwrap();
