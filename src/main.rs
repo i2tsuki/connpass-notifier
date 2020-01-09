@@ -30,7 +30,7 @@ fn main() {
     let password: String = env::var("IMAP_PASSWORD").expect("IMAP_PASSWORD is not given");
     let mail: String = env::var("IMAP_MAIL").expect("IMAP_MAIL is not given");
 
-    let chunk: usize = 10;
+    let chunk: usize = 10 - 1;
 
     let tls: TlsConnector = native_tls::TlsConnector::builder().build().unwrap();
 
@@ -49,10 +49,10 @@ fn main() {
         .unwrap();
 
     for (i, seq) in sequences.iter().enumerate() {
-        get_message_subject(&mut imap_session, *seq, mail.as_str());
         if i > chunk {
             break;
         }
+        get_message_subject(&mut imap_session, *seq, mail.as_str());
     }
 
     imap_session.logout().unwrap();
