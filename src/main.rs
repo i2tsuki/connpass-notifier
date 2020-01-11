@@ -52,16 +52,19 @@ fn main() {
         if i > chunk {
             break;
         }
-        get_message_subject(&mut imap_session, *seq, mail.as_str());
+        get_message_subject(&mut imap_session, &seq.to_string().as_str(), mail.as_str());
     }
 
     imap_session.logout().unwrap();
 }
 
-fn get_message_subject<T: Read + Write>(imap_session: &mut imap::Session<T>, seq: Seq, mail: &str) {
-    let message_id: &str = &seq.to_string();
-    let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(message_id, "RFC822").unwrap();
-    imap_session.store(message_id, "-FLAGS (\\Seen)").unwrap();
+fn get_message_subject<T: Read + Write>(
+    imap_session: &mut imap::Session<T>,
+    seqs: &str,
+    mail: &str,
+) {
+    let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(seqs, "RFC822").unwrap();
+    imap_session.store(seqs, "-FLAGS (\\Seen)").unwrap();
 
     let message: &Fetch = if let Some(m) = messages.iter().next() {
         m
