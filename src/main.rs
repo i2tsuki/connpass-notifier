@@ -72,6 +72,16 @@ fn get_message_subject<T: Read + Write>(
         return;
     };
 
+    reduce_message_text(seqs, message, mail);
+
+    imap_session
+        .store(seqs, "+FLAGS (\\Seen \\Deleted)")
+        .unwrap();
+
+    return;
+}
+
+fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
     let body: &[u8] = message.body().expect("message did not have a body!");
     let body: &str = std::str::from_utf8(body).expect("message was not valid utf-8");
 
@@ -196,10 +206,6 @@ fn get_message_subject<T: Read + Write>(
             print_mail_pdf("message.html", message_id);
         }
     }
-
-    imap_session
-        .store(message_id, "+FLAGS (\\Seen \\Deleted)")
-        .unwrap();
 
     return;
 }
