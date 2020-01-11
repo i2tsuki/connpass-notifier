@@ -72,16 +72,21 @@ fn get_message_subject<T: Read + Write>(
         return;
     };
 
-    reduce_message_text(seqs, message, mail);
+    reduce_message_text(message, mail);
 
     imap_session
-        .store(seqs, "+FLAGS (\\Seen \\Deleted)")
+        .store(
+            format!("{}", message.message).as_str(),
+            "+FLAGS (\\Seen \\Deleted)",
+        )
         .unwrap();
 
     return;
 }
 
-fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
+fn reduce_message_text(message: &Fetch, mail: &str) {
+    let message_id: String = format!("{}", message.message);
+
     let body: &[u8] = message.body().expect("message did not have a body!");
     let body: &str = std::str::from_utf8(body).expect("message was not valid utf-8");
 
@@ -144,7 +149,7 @@ fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
 
-        print_mail_pdf("message.html", message_id);
+        print_mail_pdf("message.html", message_id.as_str());
     } else if re_event_message.is_match(&subject) {
         println!("{:<32}: {}", date, subject);
 
@@ -167,9 +172,9 @@ fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
 
-        print_mail_pdf("message.html", message_id);
+        print_mail_pdf("message.html", message_id.as_str());
     } else {
-        println!("{}: {:<32}: {}", message_id, date, subject);
+        println!("{}: {:<32}: {}", message.message, date, subject);
 
         if parsed.subparts.len() > 0 {
             match parsed.subparts[parsed.subparts.len() - 1]
@@ -182,7 +187,7 @@ fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
                     f.write(&(s.as_bytes())).unwrap();
                     f.flush().unwrap();
 
-                    print_mail_pdf("message.html", message_id);
+                    print_mail_pdf("message.html", message_id.as_str());
                 }
                 Body::Base64(body) | Body::QuotedPrintable(body) => {
                     let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
@@ -190,7 +195,7 @@ fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
                     f.write(&(s.as_bytes())).unwrap();
                     f.flush().unwrap();
 
-                    print_mail_pdf("message.html", message_id);
+                    print_mail_pdf("message.html", message_id.as_str());
                 }
                 _ => {
                     return;
@@ -203,7 +208,7 @@ fn reduce_message_text(message_id: &str, message: &Fetch, mail: &str) {
             f.write(&(s.as_bytes())).unwrap();
             f.flush().unwrap();
 
-            print_mail_pdf("message.html", message_id);
+            print_mail_pdf("message.html", message_id.as_str());
         }
     }
 
