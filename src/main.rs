@@ -66,20 +66,18 @@ fn get_message_subject<T: Read + Write>(
     let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(seqs, "RFC822").unwrap();
     imap_session.store(seqs, "-FLAGS (\\Seen)").unwrap();
 
-    let message: &Fetch = if let Some(m) = messages.iter().next() {
-        m
+    if let Some(message) = messages.iter().next() {
+        reduce_message_text(message, mail);
+
+        imap_session
+            .store(
+                format!("{}", message.message).as_str(),
+                "+FLAGS (\\Seen \\Deleted)",
+            )
+            .unwrap();
     } else {
         return;
     };
-
-    reduce_message_text(message, mail);
-
-    imap_session
-        .store(
-            format!("{}", message.message).as_str(),
-            "+FLAGS (\\Seen \\Deleted)",
-        )
-        .unwrap();
 
     return;
 }
