@@ -48,12 +48,10 @@ fn main() {
         .search(format!("FROM {} SINCE {}", from, since.format("%d-%b-%Y")))
         .unwrap();
 
-    for (i, seq) in sequences.iter().enumerate() {
-        if i > chunk {
-            break;
-        }
-        get_message_subject(&mut imap_session, &seq.to_string().as_str(), mail.as_str());
-    }
+    let v: Vec<String> = sequences.into_iter().map(|id| format!("{}", id)).collect();
+    let seqs: String = v.join(",");
+
+    get_message_subject(&mut imap_session, seqs.as_str(), mail.as_str());
 
     imap_session.logout().unwrap();
 }
@@ -66,7 +64,7 @@ fn get_message_subject<T: Read + Write>(
     let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(seqs, "RFC822").unwrap();
     imap_session.store(seqs, "-FLAGS (\\Seen)").unwrap();
 
-    if let Some(message) = messages.iter().next() {
+    for message in messages.iter() {
         reduce_message_text(message, mail);
 
         imap_session
@@ -75,9 +73,7 @@ fn get_message_subject<T: Read + Write>(
                 "+FLAGS (\\Seen \\Deleted)",
             )
             .unwrap();
-    } else {
-        return;
-    };
+    }
 
     return;
 }
