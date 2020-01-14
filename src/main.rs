@@ -48,7 +48,10 @@ fn main() {
         .search(format!("FROM {} SINCE {}", from, since.format("%d-%b-%Y")))
         .unwrap();
 
-    let v: Vec<String> = sequences.into_iter().map(|id| format!("{}", id)).collect();
+    let mut v: Vec<String> = sequences.into_iter().map(|id| format!("{}", id)).collect();
+    if v.len() > chunk {
+        v.split_off(chunk);
+    }
     let seqs: String = v.join(",");
 
     get_message_subject(&mut imap_session, seqs.as_str(), mail.as_str());
