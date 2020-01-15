@@ -151,7 +151,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         println!("{:<32}: {}", date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-        let s: String;
+        let mut s: String;
 
         match parsed.subparts[1].get_body_encoded().unwrap() {
             Body::SevenBit(body) | Body::EightBit(body) => {
