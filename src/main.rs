@@ -30,7 +30,8 @@ fn main() {
     let password: String = env::var("IMAP_PASSWORD").expect("IMAP_PASSWORD is not given");
     let mail: String = env::var("IMAP_MAIL").expect("IMAP_MAIL is not given");
 
-    let chunk: usize = 10 - 1;
+    let mut chunk: usize = 10;
+    chunk = chunk - 1;
 
     let tls: TlsConnector = native_tls::TlsConnector::builder().build().unwrap();
 
