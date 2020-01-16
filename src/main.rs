@@ -54,7 +54,9 @@ fn main() {
     }
     let seqs: String = v.join(",");
 
-    get_message_subject(&mut imap_session, seqs.as_str(), mail.as_str());
+    if seqs != "" {
+        get_message_subject(&mut imap_session, seqs.as_str(), mail.as_str());
+    }
 
     imap_session.logout().unwrap();
 }
