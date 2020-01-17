@@ -58,17 +58,13 @@ fn main() {
     let seqs: String = v.join(",");
 
     if seqs != "" {
-        get_message_subject(&mut imap_session, seqs.as_str(), mail.as_str());
+        scrape_message(&mut imap_session, seqs.as_str(), mail.as_str());
     }
 
     imap_session.logout().unwrap();
 }
 
-fn get_message_subject<T: Read + Write>(
-    imap_session: &mut imap::Session<T>,
-    seqs: &str,
-    mail: &str,
-) {
+fn scrape_message<T: Read + Write>(imap_session: &mut imap::Session<T>, seqs: &str, mail: &str) {
     let messages: ZeroCopy<Vec<Fetch>> = imap_session.fetch(seqs, "RFC822").unwrap();
     imap_session.store(seqs, "-FLAGS (\\Seen)").unwrap();
 
