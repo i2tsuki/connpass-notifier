@@ -33,18 +33,20 @@ fn main() {
     let mut chunk: usize = 10;
     chunk = chunk - 1;
 
-    let tls: TlsConnector = native_tls::TlsConnector::builder().build().unwrap();
-
+    // Establish IMAP session to connect the server.
+    let tls: TlsConnector = native_tls::TlsConnector::builder()
+        .build()
+        .expect("Cannot establish TLS connection to the server.");
     let client: imap::Client<TlsStream<TcpStream>> =
-        imap::connect((domain.as_str(), port), &domain, &tls).unwrap();
-
-    let mut imap_session = client.login(user, password).unwrap();
+        imap::connect((domain.as_str(), port), &domain, &tls).expect("Cannot create IAMP client.");
+    let mut imap_session = client
+        .login(user, password)
+        .expect("Cannot login to the server.");
 
     imap_session.select("INBOX").unwrap();
 
     let since: DateTime<Local> = Local::now() - Duration::hours(24 * 30);
     let from: &str = "no-reply@connpass.com";
-
     let sequences: HashSet<Seq> = imap_session
         .search(format!("FROM {} SINCE {}", from, since.format("%d-%b-%Y")))
         .unwrap();
