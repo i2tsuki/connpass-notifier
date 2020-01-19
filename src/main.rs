@@ -1,6 +1,8 @@
 extern crate imap;
 extern crate native_tls;
 extern crate regex;
+extern crate serde;
+extern crate serde_yaml;
 extern crate time;
 
 use std::collections::HashSet;
@@ -17,10 +19,29 @@ use mailparse::body::Body;
 use mailparse::*;
 use native_tls::{TlsConnector, TlsStream};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 use std::net::TcpStream;
 use time::Duration;
 
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+struct FilterYaml {
+    filter: Vec<Filter>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+struct Filter {
+    remove: Pattern,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+struct Pattern {
+    exact: String,
+}
+
 fn main() {
+    let filter_yaml_file = fs::File::open("filter.yaml").unwrap();
+    let _: FilterYaml = serde_yaml::from_reader(filter_yaml_file).unwrap();
+
     let domain: String = env::var("IMAP_DOMAIN").expect("IMAP_DOMAIN is not given");
     let port: u16 = env::var("IMAP_PORT")
         .expect("IMAP_PORT is not given")

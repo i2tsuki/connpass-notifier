@@ -1,0 +1,7 @@
+filter:
+  - remove:
+      exact: |
+        example1
+  - remove:
+      exact: |
+        example2
