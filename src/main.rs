@@ -39,9 +39,6 @@ struct Pattern {
 }
 
 fn main() {
-    let filter_yaml_file = fs::File::open("filter.yaml").unwrap();
-    let _: FilterYaml = serde_yaml::from_reader(filter_yaml_file).unwrap();
-
     let domain: String = env::var("IMAP_DOMAIN").expect("IMAP_DOMAIN is not given");
     let port: u16 = env::var("IMAP_PORT")
         .expect("IMAP_PORT is not given")
@@ -104,6 +101,9 @@ fn scrape_message<T: Read + Write>(imap_session: &mut imap::Session<T>, seqs: &s
 }
 
 fn reduce_message_text(message: &Fetch, mail: &str) {
+    let filter_yaml_file = fs::File::open("filter.yaml").unwrap();
+    let filters: FilterYaml = serde_yaml::from_reader(filter_yaml_file).unwrap();
+
     let message_id: String = format!("{}", message.message);
 
     let body: &[u8] = message.body().expect("message did not have a body!");
@@ -147,15 +147,12 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             }
         }
 
-        s = s.replace("\r", "")
-            .replace(r#"
-      <!-- フッタ文言部分 -->
-      <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
-        <tr>
-          <td>
-            <div style="font-size:10px; color:#333; line-height:16px;">
-"#, "")
-            .replace(format!(r#"
+        s = s.replace("\r", "");
+        for filter in filters.filter {
+            s = s.replace(filter.remove.exact.as_str(), "");
+        }
+
+        s = s.replace(format!(r#"
               {}宛てにメッセージが送信されました。<br>
               今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
               ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
