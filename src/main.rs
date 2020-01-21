@@ -66,7 +66,11 @@ fn main() {
     let since: DateTime<Local> = Local::now() - Duration::hours(24 * 30);
     let from: &str = "no-reply@connpass.com";
     let sequences: HashSet<Seq> = imap_session
-        .search(format!("FROM {} SINCE {}", from, since.format("%d-%b-%Y")))
+        .search(format!(
+            "FROM {from} SINCE {since}",
+            from = from,
+            since = since.format("%d-%b-%Y")
+        ))
         .unwrap();
 
     let mut v: Vec<String> = sequences.into_iter().map(|id| format!("{}", id)).collect();
@@ -153,14 +157,15 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         }
 
         s = s.replace(format!(r#"
-              {}宛てにメッセージが送信されました。<br>
+              {mail}宛てにメッセージが送信されました。<br>
               今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
               ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
             </div>
-            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {} BeProud, Inc. All Rights Reserved.</div></td>
+            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {year} BeProud, Inc. All Rights Reserved.</div></td>
         </tr>
       </table>
-"#, mail, Local.timestamp(unix, 0).format("%Y")).as_str(), "");
+"#, mail=mail, year=Local.timestamp(unix, 0).format("%Y")
+        ).as_str(), "");
 
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
