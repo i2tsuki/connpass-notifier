@@ -73,7 +73,7 @@ fn main() {
         ))
         .unwrap();
 
-    let mut v: Vec<String> = sequences.into_iter().map(|id| format!("{}", id)).collect();
+    let mut v: Vec<String> = sequences.into_iter().map(|id| id.to_string()).collect();
     if v.len() > chunk {
         v.split_off(chunk);
     }
@@ -94,10 +94,7 @@ fn scrape_message<T: Read + Write>(imap_session: &mut imap::Session<T>, seqs: &s
         reduce_message_text(message, mail);
 
         imap_session
-            .store(
-                format!("{}", message.message).as_str(),
-                "+FLAGS (\\Seen \\Deleted)",
-            )
+            .store(message.message.to_string(), "+FLAGS (\\Seen \\Deleted)")
             .unwrap();
     }
 
@@ -108,7 +105,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     let filter_yaml_file = fs::File::open("filter.yaml").unwrap();
     let filters: FilterYaml = serde_yaml::from_reader(filter_yaml_file).unwrap();
 
-    let message_id: String = format!("{}", message.message);
+    let message_id: String = message.message.to_string();
 
     let body: &[u8] = message.body().expect("message did not have a body!");
     let body: &str = std::str::from_utf8(body).expect("message was not valid utf-8");
