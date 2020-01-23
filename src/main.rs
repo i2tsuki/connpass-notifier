@@ -128,9 +128,9 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         | re_public_event2.is_match(&subject)
         | re_open_event.is_match(&subject)
     {
-        println!("{:<32}: {}", date, subject);
+        println!("{} {:<32}: {}", message.message, date, subject);
     } else if re_document_add.is_match(&subject) {
-        println!("{:<32}: {}", date, subject);
+        println!("{} {:<32}: {}", message.message, date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
         let mut s: String;
@@ -169,7 +169,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
 
         print_mail_pdf("message.html", message_id.as_str());
     } else if re_event_message.is_match(&subject) {
-        println!("{:<32}: {}", date, subject);
+        println!("{} {:<32}: {}", message.message, date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
         let mut s: String;
@@ -192,7 +192,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
 
         print_mail_pdf("message.html", message_id.as_str());
     } else {
-        println!("{}: {:<32}: {}", message.message, date, subject);
+        println!("{} {:<32}: {}", message.message, date, subject);
 
         if parsed.subparts.len() > 0 {
             match parsed.subparts[parsed.subparts.len() - 1]
