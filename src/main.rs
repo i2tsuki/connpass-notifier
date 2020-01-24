@@ -3,6 +3,7 @@ extern crate native_tls;
 extern crate regex;
 extern crate serde;
 extern crate serde_yaml;
+extern crate tera;
 extern crate time;
 
 use std::collections::HashSet;
@@ -21,6 +22,8 @@ use native_tls::{TlsConnector, TlsStream};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::net::TcpStream;
+use tera::Context;
+use tera::Tera;
 use time::Duration;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -153,16 +156,20 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             s = s.replace(filter.remove.exact.as_str(), "");
         }
 
-        s = s.replace(format!(r#"
-              {mail}宛てにメッセージが送信されました。<br>
+        let mut context = Context::new();
+        let tpl: &str = r#"
+              {{ mail }}宛てにメッセージが送信されました。<br>
               今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
               ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
             </div>
-            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {year} BeProud, Inc. All Rights Reserved.</div></td>
+            <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} BeProud, Inc. All Rights Reserved.</div></td>
         </tr>
       </table>
-"#, mail=mail, year=Local.timestamp(unix, 0).format("%Y")
-        ).as_str(), "");
+"#;
+        context.insert("mail", mail);
+        context.insert("year", &Local.timestamp(unix, 0).format("%Y").to_string());
+        let rendered = Tera::one_off(tpl, &context, true).unwrap();
+        s = s.replace(&rendered, "");
 
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
