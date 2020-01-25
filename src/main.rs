@@ -33,12 +33,17 @@ struct FilterYaml {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Filter {
+    rule: Vec<Rule>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+struct Rule {
     remove: Pattern,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Pattern {
-    exact: String,
+    exact: Vec<String>,
 }
 
 fn main() {
@@ -140,14 +145,14 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         println!("{} {:<32}: {}", message.message, date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-        let mut s: String;
+        let body: String;
 
         match parsed.subparts[1].get_body_encoded().unwrap() {
-            Body::SevenBit(body) | Body::EightBit(body) => {
-                s = body.get_as_string().unwrap();
+            Body::SevenBit(b) | Body::EightBit(b) => {
+                body = b.get_as_string().unwrap();
             }
-            Body::Base64(body) => {
-                s = body.get_decoded_as_string().unwrap();
+            Body::Base64(b) => {
+                body = b.get_decoded_as_string().unwrap();
             }
             _ => {
                 println!("return");
@@ -155,18 +160,22 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             }
         }
 
-        let mut context = Context::new();
-        context.insert("mail", mail);
-        context.insert("year", &Local.timestamp(unix, 0).format("%Y").to_string());
+        let lines: Vec<String> = body
+            .lines()
+            .map(|line| {
+                let mut l: String = line.to_string();
+                for rule in &filters.filter[0].rule {
+                    for exact in &rule.remove.exact {
+                        let tpl: &str = &exact;
+                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                        l = l.replace(&rendered, "");
+                    }
+                }
+                return l;
+            })
+            .collect();
 
-        s = s.replace("\r", "");
-        for filter in filters.filter {
-            let tpl: &str = filter.remove.exact.as_str();
-            let rendered = Tera::one_off(tpl, &context, true).unwrap();
-            s = s.replace(&rendered, "");
-        }
-
-        f.write(&(s.as_bytes())).unwrap();
+        f.write(&(lines.join("\n").as_bytes())).unwrap();
         f.flush().unwrap();
 
         print_mail_pdf("message.html", message_id.as_str());

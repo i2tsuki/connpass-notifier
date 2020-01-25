@@ -1,17 +1,9 @@
 filter:
-  - remove:
-      exact: |
-        <!-- フッタ文言部分 -->
-              <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
-                <tr>
-                  <td>
-                    <div style="font-size:10px; color:#333; line-height:16px;">
-  - remove:
-      exact: |
-        {{ mail }}宛てにメッセージが送信されました。<br>
-                      今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>
-                      ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
-                    </div>
-                    <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} BeProud, Inc. All Rights Reserved.</div></td>
-                </tr>
-              </table>
+  - rule:
+    - remove:
+        exact:
+          - '<!-- フッタ文言部分 -->'
+          - '{{ mail }}宛てにメッセージが送信されました。<br>'
+          - '今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>'
+          - ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
+          - '<div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} BeProud, Inc. All Rights Reserved.</div>'
