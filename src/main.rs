@@ -126,6 +126,10 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
     let re_event_message = Regex::new(r"^connpass イベント管理者からのメッセージ.*$").unwrap();
 
+    let mut context = Context::new();
+    context.insert("mail", mail);
+    context.insert("year", &Local.timestamp(unix, 0).format("%Y").to_string());
+
     if re_register_event.is_match(&subject)
         | re_public_event1.is_match(&subject)
         | re_public_event2.is_match(&subject)
