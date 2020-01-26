@@ -123,6 +123,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     let date: String = parsed.headers.get_first_value("Date").unwrap().unwrap();
     let unix: i64 = mailparse::dateparse(date.as_str()).unwrap();
     let subject: String = parsed.headers.get_first_value("Subject").unwrap().unwrap();
+    let subject: &str = subject.as_str().trim();
 
     let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
     let re_public_event1: Regex = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
