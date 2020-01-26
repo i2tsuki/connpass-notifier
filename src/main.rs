@@ -183,14 +183,14 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         println!("{} {:<32}: {}", message.message, date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-        let mut s: String;
+        let body: String;
 
         match parsed.subparts[1].get_body_encoded().unwrap() {
-            Body::SevenBit(body) | Body::EightBit(body) => {
-                s = body.get_as_string().unwrap();
+            Body::SevenBit(b) | Body::EightBit(b) => {
+                body = b.get_as_string().unwrap();
             }
-            Body::Base64(body) => {
-                s = body.get_decoded_as_string().unwrap();
+            Body::Base64(b) => {
+                body = b.get_decoded_as_string().unwrap();
             }
             _ => {
                 println!("return");
@@ -198,6 +198,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             }
         }
 
+        let s: String = body;
         f.write(&(s.as_bytes())).unwrap();
         f.flush().unwrap();
 
