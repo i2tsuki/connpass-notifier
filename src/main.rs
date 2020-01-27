@@ -200,8 +200,22 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             }
         }
 
-        let s: String = body;
-        f.write(&(s.as_bytes())).unwrap();
+        let lines: Vec<String> = body
+            .lines()
+            .map(|line| {
+                let mut l: String = line.to_string();
+                for rule in &filters.filter[0].rule {
+                    for exact in &rule.remove.exact {
+                        let tpl: &str = &exact;
+                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                        l = l.replace(&rendered, "");
+                    }
+                }
+                return l;
+            })
+            .collect();
+
+        f.write(&(lines.join("\n").as_bytes())).unwrap();
         f.flush().unwrap();
 
         print_mail_pdf("message.html", message_id.as_str());

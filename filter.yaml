@@ -5,5 +5,13 @@ filter:
           - '<!-- フッタ文言部分 -->'
           - '{{ mail }}宛てにメッセージが送信されました。<br>'
           - '今後<a href="https://connpass.com/" target="_blank" style="color:#000;">connpass.com</a>からこのようなメールを受け取りたくない場合は、<a href="https://connpass.com/settings/" target="_blank" style="color:#000;">利用設定</a>から配信停止することができます。<br>'
-          - ※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>
+          - '※ このメールに心当たりの無い方は、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>からお問い合わせください。<br>'
+          - '<div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} BeProud, Inc. All Rights Reserved.</div>'
+    - remove:
+        exact:
+          - '<!-- フッタ文言部分 -->'
+          - '{{ mail }}宛てにメッセージが送信されました。<br>'
+          - '※ このメッセージは、Rancher JPの管理者からグループメンバーへ一斉送信されたものです。このメッセージに対して直接の返信は出来ませんのでご了承ください。<br>'
+          - '※ 今後、このようなグループのお知らせを受け取りたくない場合は、グループページから、グループを退会をしてください。<br>'
+          - '※ 心当たりの無い内容・勧誘やスパムなどの迷惑メールが届いた場合、<a href="https://connpass.com/inquiry/" target="_blank" style="color:#000;">お問い合わせフォーム</a>よりご連絡ください。内容を確認のうえ適切な処置をいたします。'
           - '<div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} BeProud, Inc. All Rights Reserved.</div>'
