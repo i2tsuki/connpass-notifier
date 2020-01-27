@@ -131,6 +131,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     let re_open_event = Regex::new(r"^.*の募集が開始されました$").unwrap();
     let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
     let re_event_message = Regex::new(r"^connpass イベント管理者からのメッセージ.*$").unwrap();
+    let re_group_message = Regex::new(r"^connpass グループ管理者からのメッセージ.*$").unwrap();
 
     let mut context = Context::new();
     context.insert("mail", mail);
@@ -180,7 +181,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
         f.flush().unwrap();
 
         print_mail_pdf("message.html", message_id.as_str());
-    } else if re_event_message.is_match(&subject) {
+    } else if re_event_message.is_match(&subject) || re_group_message.is_match(&subject) {
         println!("{} {:<32}: {}", message.message, date, subject);
 
         let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
