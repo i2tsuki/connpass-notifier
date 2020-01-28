@@ -229,40 +229,31 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     } else {
         println!("{} {:<32}: {}", message.message, date, subject);
 
+        let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
+        let body: String;
+
         if parsed.subparts.len() > 0 {
             match parsed.subparts[parsed.subparts.len() - 1]
                 .get_body_encoded()
                 .unwrap()
             {
-                Body::SevenBit(body) | Body::EightBit(body) => {
-                    let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-                    let s = body.get_as_string().unwrap();
-                    f.write(&(s.as_bytes())).unwrap();
-                    f.flush().unwrap();
-
-                    print_mail_pdf("message.html", message_id.as_str());
+                Body::SevenBit(b) | Body::EightBit(b) => {
+                    body = b.get_as_string().unwrap();
                 }
-                Body::Base64(body) | Body::QuotedPrintable(body) => {
-                    let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-                    let s = body.get_decoded_as_string().unwrap();
-                    f.write(&(s.as_bytes())).unwrap();
-                    f.flush().unwrap();
-
-                    print_mail_pdf("message.html", message_id.as_str());
+                Body::Base64(b) | Body::QuotedPrintable(b) => {
+                    body = b.get_decoded_as_string().unwrap();
                 }
                 _ => {
                     return;
                 }
             }
         } else {
-            let mut f = BufWriter::new(fs::File::create("message.html").unwrap());
-            let s = parsed.get_body().unwrap();
-
-            f.write(&(s.as_bytes())).unwrap();
-            f.flush().unwrap();
-
-            print_mail_pdf("message.html", message_id.as_str());
+            body = parsed.get_body().unwrap();
         }
+
+        f.write(&(body.as_bytes())).unwrap();
+        f.flush().unwrap();
+        print_mail_pdf("message.html", message_id.as_str());
     }
 
     return;
