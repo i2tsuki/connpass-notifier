@@ -125,13 +125,20 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
     let subject: String = parsed.headers.get_first_value("Subject").unwrap().unwrap();
     let subject: &str = subject.as_str().trim();
 
-    let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$").unwrap();
-    let re_public_event1: Regex = Regex::new(r"^.*がイベント.*を公開しました$").unwrap();
-    let re_public_event2 = Regex::new(r"^.*さんが.*を公開しました$").unwrap();
-    let re_open_event = Regex::new(r"^.*の募集が開始されました$").unwrap();
-    let re_document_add = Regex::new(r"^.*に資料が追加されました。$").unwrap();
-    let re_event_message = Regex::new(r"^connpass イベント管理者からのメッセージ.*$").unwrap();
-    let re_group_message = Regex::new(r"^connpass グループ管理者からのメッセージ.*$").unwrap();
+    let re_register_event: Regex = Regex::new(r"^.*さんが.*に参加登録しました。$")
+        .expect("does not compile regular expression");
+    let re_public_event1: Regex =
+        Regex::new(r"^.*がイベント.*を公開しました$").expect("does not compile regular expression");
+    let re_public_event2 =
+        Regex::new(r"^.*さんが.*を公開しました$").expect("does not compile regular expression");
+    let re_open_event =
+        Regex::new(r"^.*の募集が開始されました$").expect("does not compile regular expression");
+    let re_document_add =
+        Regex::new(r"^.*に資料が追加されました。$").expect("does not compile regular expression");
+    let re_event_message = Regex::new(r"^connpass イベント管理者からのメッセージ.*$")
+        .expect("does not compile regular expression");
+    let re_group_message = Regex::new(r"^connpass グループ管理者からのメッセージ.*$")
+        .expect("does not compile regular expression");
 
     let mut context = Context::new();
     context.insert("mail", mail);
