@@ -160,7 +160,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             Body::SevenBit(b) | Body::EightBit(b) => {
                 body = b.get_as_string().unwrap();
             }
-            Body::Base64(b) => {
+            Body::Base64(b) | Body::QuotedPrintable(b) => {
                 body = b.get_decoded_as_string().unwrap();
             }
             _ => {
@@ -198,7 +198,7 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             Body::SevenBit(b) | Body::EightBit(b) => {
                 body = b.get_as_string().unwrap();
             }
-            Body::Base64(b) => {
+            Body::Base64(b) | Body::QuotedPrintable(b) => {
                 body = b.get_decoded_as_string().unwrap();
             }
             _ => {
