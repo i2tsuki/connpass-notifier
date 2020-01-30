@@ -43,7 +43,7 @@ struct Rule {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Pattern {
-    exact: Vec<String>,
+    exact: Option<Vec<String>>,
 }
 
 fn main() {
@@ -173,11 +173,14 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             .lines()
             .map(|line| {
                 let mut l: String = line.to_string();
+
                 for rule in &filters.filter[0].rule {
-                    for exact in &rule.remove.exact {
-                        let tpl: &str = &exact;
-                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                        l = l.replace(&rendered, "");
+                    if let Some(pattern) = &rule.remove.exact {
+                        for exact in pattern {
+                            let tpl: &str = exact;
+                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                            l = l.replace(&rendered, "");
+                        }
                     }
                 }
                 return l;
@@ -211,11 +214,14 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
             .lines()
             .map(|line| {
                 let mut l: String = line.to_string();
+
                 for rule in &filters.filter[0].rule {
-                    for exact in &rule.remove.exact {
-                        let tpl: &str = &exact;
-                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                        l = l.replace(&rendered, "");
+                    if let Some(pattern) = &rule.remove.exact {
+                        for exact in pattern {
+                            let tpl: &str = exact;
+                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                            l = l.replace(&rendered, "");
+                        }
                     }
                 }
                 return l;
