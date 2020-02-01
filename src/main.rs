@@ -100,7 +100,7 @@ fn scrape_message<T: Read + Write>(imap_session: &mut imap::Session<T>, seqs: &s
     imap_session.store(seqs, "-FLAGS (\\Seen)").unwrap();
 
     for message in messages.iter() {
-        reduce_message_text(message, mail);
+        reduce_message(message, mail);
 
         imap_session
             .store(message.message.to_string(), "+FLAGS (\\Seen \\Deleted)")
@@ -110,7 +110,7 @@ fn scrape_message<T: Read + Write>(imap_session: &mut imap::Session<T>, seqs: &s
     return;
 }
 
-fn reduce_message_text(message: &Fetch, mail: &str) {
+fn reduce_message(message: &Fetch, mail: &str) {
     let filter_yaml_file = fs::File::open("filter.yaml").unwrap();
     let filters: FilterYaml = serde_yaml::from_reader(filter_yaml_file).unwrap();
 
