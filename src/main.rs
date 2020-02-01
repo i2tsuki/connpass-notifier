@@ -44,6 +44,7 @@ struct Rule {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Pattern {
     exact: Option<Vec<String>>,
+    regex: Option<Vec<String>>,
 }
 
 fn main() {
@@ -182,6 +183,15 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
                             l = l.replace(&rendered, "");
                         }
                     }
+                    if let Some(pattern) = &rule.remove.regex {
+                        for exact in pattern {
+                            let tpl: &str = exact;
+                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                            let re: Regex =
+                                Regex::new(&rendered).expect("does not compile regular expression");
+                            l = re.replace(&l, "").into_owned();
+                        }
+                    }
                 }
                 return l;
             })
@@ -221,6 +231,15 @@ fn reduce_message_text(message: &Fetch, mail: &str) {
                             let tpl: &str = exact;
                             let rendered = Tera::one_off(tpl, &context, true).unwrap();
                             l = l.replace(&rendered, "");
+                        }
+                    }
+                    if let Some(pattern) = &rule.remove.regex {
+                        for exact in pattern {
+                            let tpl: &str = exact;
+                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                            let re: Regex =
+                                Regex::new(&rendered).expect("does not compile regular expression");
+                            l = re.replace(&l, "").into_owned();
                         }
                     }
                 }
