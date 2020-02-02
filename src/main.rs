@@ -236,14 +236,16 @@ fn reduce_message_body(body: String, context: tera::Context, filters: FilterYaml
     let lines: Vec<String> = body
         .lines()
         .map(|line| {
-            let mut l: String = line.to_string();
+            let l: String = line.to_string();
 
             for rule in &filters.filter[0].rule {
                 if let Some(pattern) = &rule.remove.exact {
                     for exact in pattern {
                         let tpl: &str = exact;
                         let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                        l = l.replace(&rendered, "");
+                        if l.contains(&rendered) {
+                            return "".to_string();
+                        }
                     }
                 }
                 if let Some(pattern) = &rule.remove.regex {
@@ -252,7 +254,9 @@ fn reduce_message_body(body: String, context: tera::Context, filters: FilterYaml
                         let rendered = Tera::one_off(tpl, &context, true).unwrap();
                         let re: Regex =
                             Regex::new(&rendered).expect("does not compile regular expression");
-                        l = re.replace(&l, "").into_owned();
+                        if re.is_match(&l) {
+                            return "".to_string();
+                        }
                     }
                 }
             }
