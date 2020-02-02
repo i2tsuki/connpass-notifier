@@ -170,33 +170,7 @@ fn reduce_message(message: &Fetch, mail: &str) {
             }
         }
 
-        let lines: Vec<String> = body
-            .lines()
-            .map(|line| {
-                let mut l: String = line.to_string();
-
-                for rule in &filters.filter[0].rule {
-                    if let Some(pattern) = &rule.remove.exact {
-                        for exact in pattern {
-                            let tpl: &str = exact;
-                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                            l = l.replace(&rendered, "");
-                        }
-                    }
-                    if let Some(pattern) = &rule.remove.regex {
-                        for exact in pattern {
-                            let tpl: &str = exact;
-                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                            let re: Regex =
-                                Regex::new(&rendered).expect("does not compile regular expression");
-                            l = re.replace(&l, "").into_owned();
-                        }
-                    }
-                }
-                return l;
-            })
-            .collect();
-
+        let lines: Vec<String> = reduce_message_body(body, context, filters);
         f.write(&(lines.join("\n").as_bytes())).unwrap();
         f.flush().unwrap();
 
@@ -220,33 +194,7 @@ fn reduce_message(message: &Fetch, mail: &str) {
             }
         }
 
-        let lines: Vec<String> = body
-            .lines()
-            .map(|line| {
-                let mut l: String = line.to_string();
-
-                for rule in &filters.filter[0].rule {
-                    if let Some(pattern) = &rule.remove.exact {
-                        for exact in pattern {
-                            let tpl: &str = exact;
-                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                            l = l.replace(&rendered, "");
-                        }
-                    }
-                    if let Some(pattern) = &rule.remove.regex {
-                        for exact in pattern {
-                            let tpl: &str = exact;
-                            let rendered = Tera::one_off(tpl, &context, true).unwrap();
-                            let re: Regex =
-                                Regex::new(&rendered).expect("does not compile regular expression");
-                            l = re.replace(&l, "").into_owned();
-                        }
-                    }
-                }
-                return l;
-            })
-            .collect();
-
+        let lines: Vec<String> = reduce_message_body(body, context, filters);
         f.write(&(lines.join("\n").as_bytes())).unwrap();
         f.flush().unwrap();
 
@@ -282,6 +230,36 @@ fn reduce_message(message: &Fetch, mail: &str) {
     }
 
     return;
+}
+
+fn reduce_message_body(body: String, context: tera::Context, filters: FilterYaml) -> Vec<String> {
+    let lines: Vec<String> = body
+        .lines()
+        .map(|line| {
+            let mut l: String = line.to_string();
+
+            for rule in &filters.filter[0].rule {
+                if let Some(pattern) = &rule.remove.exact {
+                    for exact in pattern {
+                        let tpl: &str = exact;
+                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                        l = l.replace(&rendered, "");
+                    }
+                }
+                if let Some(pattern) = &rule.remove.regex {
+                    for exact in pattern {
+                        let tpl: &str = exact;
+                        let rendered = Tera::one_off(tpl, &context, true).unwrap();
+                        let re: Regex =
+                            Regex::new(&rendered).expect("does not compile regular expression");
+                        l = re.replace(&l, "").into_owned();
+                    }
+                }
+            }
+            return l;
+        })
+        .collect();
+    return lines;
 }
 
 fn print_mail_pdf(file: &str, seq: &str) {
