@@ -266,6 +266,52 @@ fn reduce_message_body(body: String, context: tera::Context, filters: FilterYaml
     return lines;
 }
 
+#[test]
+fn test_reduce_message_body() {
+    let body: String = r#"
+      <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
+        <tr>
+          <td>
+            <div style="font-size:10px; color:#333; line-height:16px;">
+              example@example.com宛てにメッセージが送信されました。<br>
+              <div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © 2000 Example, Inc. All Rights Reserved.</div>
+            </div>
+            </td>
+        </tr>
+      </table>
+"#.to_string();
+    let mut context = Context::new();
+    context.insert("mail", "example@example.com");
+    context.insert("year", "2000");
+
+    let rule: Vec<Rule> = vec![Rule {
+        remove: Pattern {
+            exact: Some(vec![
+                r#"{{ mail }}宛てにメッセージが送信されました。<br>"#.to_string(),
+                r#"<div style="font-size:9px; color:#333; font-weight:bold; text-align:center; margin:15px auto 0;">Copyright © {{ year }} Example, Inc. All Rights Reserved.</div>"#.to_string(),
+            ]),
+            regex: None,
+        },
+    }];
+    let filter: Vec<Filter> = vec![Filter { rule: rule }];
+    let filters: FilterYaml = FilterYaml { filter: filter };
+    let lines: Vec<String> = reduce_message_body(body, context, filters);
+    assert_eq!(
+        lines.join("\n"),
+        r#"
+      <table width="460" border="0" align="center" cellpadding="0" cellspacing="0" style="border-top:1px #CCC solid; padding-top:10px;">
+        <tr>
+          <td>
+            <div style="font-size:10px; color:#333; line-height:16px;">
+
+
+            </div>
+            </td>
+        </tr>
+      </table>"#
+    );
+}
+
 fn print_mail_pdf(file: &str, seq: &str) {
     let browser = Browser::default().unwrap();
     let tab = browser.wait_for_initial_tab().unwrap();
