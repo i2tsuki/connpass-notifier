@@ -32,5 +32,7 @@ jobs:
         rust-version: ${{ matrix.rust }}
     - name: Build System Info
       run: rustc --version
+    - name: Test
+      run: cargo test
     - name: Build
       run: cargo build
