@@ -71,7 +71,7 @@ fn main() {
         .build()
         .expect("Cannot establish TLS connection to the server.");
     let client: imap::Client<TlsStream<TcpStream>> =
-        imap::connect((domain.as_str(), port), &domain, &tls).expect("Cannot create IAMP client.");
+        imap::connect((domain.as_str(), port), &domain, &tls).expect("Cannot create IMAP client.");
     let mut imap_session = client
         .login(user, password)
         .expect("Cannot login to the server.");
