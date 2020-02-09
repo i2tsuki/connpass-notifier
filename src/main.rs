@@ -33,6 +33,12 @@ struct FilterYaml {
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Filter {
+    email: Vec<Email>,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+struct Email {
+    from: Option<String>,
     rule: Vec<Rule>,
 }
 
@@ -238,7 +244,7 @@ fn reduce_message_body(body: String, context: tera::Context, filters: FilterYaml
         .map(|line| {
             let l: String = line.to_string();
 
-            for rule in &filters.filter[0].rule {
+            for rule in &filters.filter[0].email[0].rule {
                 if let Some(pattern) = &rule.remove.exact {
                     for exact in pattern {
                         let tpl: &str = exact;
@@ -293,7 +299,12 @@ fn test_reduce_message_body() {
             regex: None,
         },
     }];
-    let filter: Vec<Filter> = vec![Filter { rule: rule }];
+    let filter: Vec<Filter> = vec![Filter {
+        email: vec![Email {
+            from: None,
+            rule: rule,
+        }],
+    }];
     let filters: FilterYaml = FilterYaml { filter: filter };
     let lines: Vec<String> = reduce_message_body(body, context, filters);
     assert_eq!(
